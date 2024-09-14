@@ -1,6 +1,6 @@
 Pulsarego
 
-
+![Screenshot of Pulsarego](https://github.com/selfhostil/PulsarGo/blob/main/screenshot.png)
 Pulsarego is a lightweight server monitoring tool written in Go. It allows you to monitor the status of servers or web services, alerting you via Telegram when a service goes down. The tool provides a simple web interface for managing servers, configuring check intervals, and customizing API settings.
 Features
 
