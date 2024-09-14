@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  server-monitor:
+    build: .
+    ports:
+      - "5001:5001"
+    volumes:
+      - .:/app
+    environment:
+      - PORT=5001

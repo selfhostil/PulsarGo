@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pulsar - Server Tracking</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Custom styles */
+        body {
+            padding: 2rem;
+            background-image: url('/static/images/background.png'); /* Background image path */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+        .control-panel {
+            margin-top: 2rem;
+        }
+        .btn-toggle {
+            margin-left: 10px;
+        }
+        .status-enabled {
+            color: green;
+        }
+        .status-disabled {
+            color: red;
+        }
+        .navbar {
+            background-color: rgba(108, 99, 255, 0.8);
+            color: white;
+            padding: 1rem;
+        }
+        .export-btn {
+            background-color: #ffffff;
+            color: rgb(37, 20, 224);
+        }
+        .timer {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .content {
+            background-color: rgba(255, 255, 255, 0.8); /* Transparent white background */
+            padding: 2rem;
+            border-radius: 8px;
+        }
+        .favicon {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+        }
+        .footer {
+            margin-top: 2rem;
+            padding: 1rem;
+            background-color: rgba(255, 247, 247, 0.667);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="content">
+        <!-- Navbar with Settings button -->
+        <div class="navbar d-flex justify-content-between">
+            <h3>Pulsar - Server Pulse Tracker</h3>
+            <!-- Button to open the settings modal -->
+            <button type="button" class="btn btn-outline-light" data-bs-toggle="modal" data-bs-target="#settingsModal">
+                <img src="/static/images/telegram.jpg" width="20" height="20" alt="time">
+                Settings
+            </button>
+        </div>
+
+<!-- Modal for settings (Telegram bot and chat ID) -->
+<div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="settingsModalLabel">API Configuration</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="/update_api" method="POST" id="apiSettingsForm">
+                    <label for="telegram_bot_id" class="form-label">Telegram Bot ID:</label>
+                    <input type="text" id="telegram_bot_id" name="telegram_bot_id" class="form-control" value="{{ .api_token }}" placeholder="Enter Telegram Bot ID">
+
+                    <label for="chat_id" class="form-label mt-2">Chat ID:</label>
+                    <input type="text" id="chat_id" name="chat_id" class="form-control" value="{{ .chat_id }}" placeholder="Enter Chat ID">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary" form="apiSettingsForm">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+        <!-- Timer Section -->
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card p-3">
+                    <h5>
+                        <img src="/static/images/time.png" width="40" height="40" alt="time">
+                        Current Time</h5>
+                    <p id="current-time"></p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card p-3">
+                    <h5>
+                        <img src="/static/images/uptime.png" width="40" height="40" alt="uptime">
+                        Online Duration</h5>
+                    <p id="online-duration"></p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card p-3 d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h5>
+                            <img src="/static/images/next.png" width="40" height="40" alt="next">
+                            Next Check In</h5>
+                        <p id="next-check"></p>
+                    </div>
+                   
+                </div>
+            </div>
+        </div>
+
+        <!-- Button to trigger modal for adding domain -->
+        <button type="button" class="btn btn-success mb-3 mt-4" data-bs-toggle="modal" data-bs-target="#addDomainModal">
+            Add New Server
+        </button>
+        <button type="button" class="btn btn-primary" id="check-now-btn" onclick="checkNow()">Check Now</button>
+
+
+        <!-- Modal for adding a new domain -->
+      <!-- Modal for adding a new domain -->
+<div class="modal fade" id="addDomainModal" tabindex="-1" aria-labelledby="addDomainModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addDomainModalLabel">Add New Domain</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="/add_domain" method="POST" id="addDomainForm">
+                    <label for="new_domain" class="form-label">Enter Domain:</label>
+                    <input type="text" id="new_domain" name="new_domain" class="form-control" placeholder="http://example.com" required>
+
+                    <label for="service_name" class="form-label mt-2">Service Name:</label>
+                    <input type="text" id="service_name" name="service_name" class="form-control" placeholder="Example Service" required>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-success" form="addDomainForm">Add Domain</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+        <!-- Server Status Section -->
+        <table class="table table-striped mt-3">
+            <thead>
+                <tr>
+                    <th><img src="/static/images/name.png" width="20" height="20" alt="name">
+                        Service Name</th>
+                    <th> <img src="/static/images/domain1.png" width="20" height="20" alt="time">
+                        Domain</th>
+                    <th><img src="/static/images/status.svg" width="20" height="20" alt="st">
+                        Status</th>
+                    <th><img src="/static/images/action.png" width="20" height="20" alt="ac">
+                        Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{ range .domains }}
+                <tr>
+                    <td> <img src="/static/images/domain.png" width="20" height="20" alt="domain">
+                        {{ .ServiceName }}</td>
+                    <td>
+                        <!-- Get favicon for each domain and make domain a clickable link -->
+                        <img src="https://www.google.com/s2/favicons?domain={{ .Name }}" class="favicon" alt="favicon">
+                        <a href="{{ .Name }}" target="_blank">{{ .Name }}</a>
+                    </td>
+                    <td>
+                        {{ if eq .Status "OK" }}
+                        <span class="badge bg-success">OK</span>
+                        {{ else }}
+                        <span class="badge bg-danger">ERR</span>
+                        {{ end }}
+                    </td>
+                    <td>
+                        <form action="/delete_domain" method="POST" style="display:inline;">
+                            <input type="hidden" name="domain" value="{{ .Name }}">
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {{ end }}
+            </tbody>
+        </table>
+        <!-- Control Panel -->
+        <div class="control-panel">
+            <form action="/toggle_monitoring" method="POST">
+                <div class="d-flex align-items-center">
+                    <span> <img src="/static/images/monitoring.png" width="20" height="20" alt="monitor">
+                        Monitoring Status: </span>
+                    <span class="status {{ if .monitoring }}status-enabled{{ else }}status-disabled{{ end }}">
+                        {{ if .monitoring }}Enabled{{ else }}Disabled{{ end }}
+                    </span>
+                    <button type="submit" class="btn btn-toggle {{ if .monitoring }}btn-danger{{ else }}btn-success{{ end }}">
+                        {{ if .monitoring }}Disable Monitoring{{ else }}Enable Monitoring{{ end }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer Section -->
+    <footer class="footer">
+        <div class="d-flex justify-content-between">
+            <span>&copy; 2024 Pulsar</span>
+            <div>
+                <a href="/about">
+                    <img src="/static/images/about.png" width="20" height="20" alt="ab">
+                    
+                    About</a> |
+                <a href="https://www.paypal.com/paypalme/chinashipping?country.x=IL&locale.x=en_US">
+                    <img src="/static/images/donate.png" width="20" height="20" alt="d">
+                    
+                    Donate</a> |
+                <a href="https://github.com/selfhostil?tab=repositories">
+                    <img src="/static/images/github.png" width="20" height="20" alt="git">
+                    Support</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- JavaScript for Timers -->
+    <script>
+        // Display current time
+        function updateCurrentTime() {
+            const currentTimeElement = document.getElementById('current-time');
+            const now = new Date();
+            currentTimeElement.innerText = now.toLocaleTimeString() + ' ' + now.toLocaleDateString();
+        }
+
+        // Display online duration (assuming the server started now)
+        let onlineStart = new Date();
+        function updateOnlineDuration() {
+            const onlineDurationElement = document.getElementById('online-duration');
+            const now = new Date();
+            const elapsedMs = now - onlineStart;
+            const elapsedMinutes = Math.floor(elapsedMs / 1000 / 60);
+            const hours = Math.floor(elapsedMinutes / 60);
+            const minutes = elapsedMinutes % 60;
+            onlineDurationElement.innerText = `${hours} hours ${minutes} minutes`;
+        }
+
+        // Countdown to next server check (assuming 5 minutes interval)
+        let nextCheck = 5 * 60;  // 5 minutes in seconds
+        function updateNextCheck() {
+            const nextCheckElement = document.getElementById('next-check');
+            if (nextCheck > 0) {
+                nextCheck--;
+                const minutes = Math.floor(nextCheck / 60);
+                const seconds = nextCheck % 60;
+                nextCheckElement.innerText = `${minutes}m ${seconds}s`;
+            } else {
+                nextCheck = 5 * 60;  // Reset to 5 minutes
+            }
+        }
+
+        // Check Now function to trigger an immediate check
+        function checkNow() {
+            fetch('/check_now', { method: 'POST' })
+                .then(response => response.text())
+                .then(data => {
+                    alert('Server check triggered');
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        // Update all timers every second
+        setInterval(() => {
+            updateCurrentTime();
+            updateOnlineDuration();
+            updateNextCheck();
+        }, 1000);
+
+        // Initial timer update on page load
+        updateCurrentTime();
+        updateOnlineDuration();
+        updateNextCheck();
+    </script>
+</body>
+</html>
