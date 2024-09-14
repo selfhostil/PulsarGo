@@ -78,6 +78,7 @@ Add server URLs and their respective service names in the domain.conf file in th
 bash
 
 http://example.com # Example Service
+
 http://test.com # Test Service
 
 api.conf
@@ -87,6 +88,7 @@ Set the Telegram bot token and chat ID in the api.conf file:
 makefile
 
 api_token=YOUR_TELEGRAM_BOT_TOKEN
+
 chat_id=YOUR_CHAT_ID
 
 Usage
