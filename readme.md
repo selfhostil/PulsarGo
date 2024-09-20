@@ -116,5 +116,3 @@ This project is licensed under the MIT License. See the LICENSE file for more in
 Support
 
 For help and support, feel free to open an issue on the GitHub Issues page.
-
-Feel free to add any specific information such as how to run tests or additional commands if necessary. Let me know if you need more modifications!
